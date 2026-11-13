@@ -45,4 +45,10 @@
 
 ## 许可证
 
-MIT
+本软件基于 [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) 发布，版权所有 © 2026 ooUwUoo。
+
+- 允许：个人学习、研究、测试、业余爱好等非商业用途的使用、修改
+- 禁止：任何商业用途，以及售卖本软件、源码或其衍生作品（包括转售安装包、付费分发、捆绑商用产品）
+- 商业使用或销售许可须另行获得版权所有人的书面授权
+
+完整条款见 [LICENSE](LICENSE) 文件。软件按"现状"提供，不附带任何担保。

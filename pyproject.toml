@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "civitai-manager"
 version = "0.1.0"
-description = "CivitAI 模型管理工具 - Windows 桌面应用"
+description = "CivitAI 模型下载工具 - Windows 桌面应用"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "CivitAI Manager" }]
+license = { text = "PolyForm-Noncommercial-1.0.0" }
+authors = [{ name = "ooUwUoo" }]
 dependencies = [
     "PySide6>=6.6",
     "httpx>=0.27",
