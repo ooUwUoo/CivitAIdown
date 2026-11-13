@@ -1,0 +1,110 @@
+{
+  "id": 12345,
+  "name": "Test Checkpoint Model",
+  "description": "这是一个测试用的 Checkpoint 模型描述",
+  "type": "Checkpoint",
+  "nsfw": false,
+  "allow_no_credit": true,
+  "allow_commercial_use": "Sell",
+  "allow_derivatives": true,
+  "allow_different_permissions": true,
+  "creator": {
+    "username": "testCreator",
+    "image": "https://civitai.com/user/avatar.png"
+  },
+  "tags": ["anime", "portrait", "photorealistic"],
+  "stats": {
+    "downloadCount": 10000,
+    "favoriteCount": 500,
+    "commentCount": 50,
+    "ratingCount": 200,
+    "rating": 4.8
+  },
+  "versions": [
+    {
+      "id": 67890,
+      "model_id": 12345,
+      "name": "v1.0",
+      "base_model": "SD 1.5",
+      "created_at": "2024-01-15T08:30:00.000Z",
+      "download_url": "https://civitai.com/api/download/models/67890",
+      "trained_words": ["test_trigger", "another_trigger"],
+      "files": [
+        {
+          "id": 100001,
+          "name": "test_model_v10.safetensors",
+          "size_kb": 2097152,
+          "pickle_scan_message": "No infection found",
+          "pickle_scan_result": true,
+          "virus_scan_result": "No virus found",
+          "scan_result": "success",
+          "download_url": "https://civitai.com/api/download/models/67890?type=Model",
+          "type": "Model"
+        },
+        {
+          "id": 100002,
+          "name": "test_model_v10_config.yaml",
+          "size_kb": 2,
+          "download_url": "https://civitai.com/api/download/models/67890?type=Config",
+          "type": "Config"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/abc123/image1.jpg",
+          "nsfw": "None",
+          "width": 1024,
+          "height": 1536,
+          "hash": "abc123hash",
+          "type": "image",
+          "metadata": {
+            "prompt": "masterpiece, best quality, test_trigger",
+            "negativePrompt": "low quality, bad anatomy",
+            "cfgScale": 7.5,
+            "steps": 30,
+            "sampler": "DPM++ 2M Karras",
+            "seed": 1234567890
+          }
+        },
+        {
+          "url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/def456/image2.jpg",
+          "nsfw": "None",
+          "width": 1024,
+          "height": 1536,
+          "hash": "def456hash",
+          "type": "image",
+          "metadata": {
+            "prompt": "test_trigger, portrait",
+            "cfgScale": 8.0,
+            "steps": 25,
+            "sampler": "Euler a"
+          }
+        }
+      ],
+      "stats": {
+        "downloadCount": 8000,
+        "ratingCount": "150",
+        "rating": 4.9
+      }
+    },
+    {
+      "id": 67891,
+      "model_id": 12345,
+      "name": "v0.9-beta",
+      "base_model": "SD 1.5",
+      "created_at": "2023-12-01T10:00:00.000Z",
+      "download_url": "https://civitai.com/api/download/models/67891",
+      "trained_words": [],
+      "files": [
+        {
+          "id": 100003,
+          "name": "test_model_v09beta.safetensors",
+          "size_kb": 2097152,
+          "download_url": "https://civitai.com/api/download/models/67891?type=Model",
+          "type": "Model"
+        }
+      ],
+      "images": []
+    }
+  ]
+}

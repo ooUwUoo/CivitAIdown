@@ -1,0 +1,65 @@
+{# Markdown 导出模板 - 模型资料导出 #}
+# {{ model.name }}{% if version %} - {{ version.name }}{% endif %}
+
+{% if original_url %}
+> [CivitAI 原始链接]({{ original_url }})
+
+{% endif %}
+
+## 基本信息
+
+| 属性 | 值 |
+|------|-----|
+| 作者 | {{ author or '-' }} |
+| 模型类型 | {{ model.type or '-' }} |
+{% if version %}
+| 基础模型 | {{ version.base_model or '-' }} |
+| 版本 | {{ version.name or '-' }} |
+{% endif %}
+{% if civitai_model_id %}
+| CivitAI ID | {{ civitai_model_id }} |
+{% endif %}
+
+{% if tags %}
+## 标签
+
+{% for tag in tags %}
+- {{ tag }}
+{% endfor %}
+
+{% endif %}
+
+{% if trigger_words %}
+## Trigger Words
+
+{{ trigger_words | join(', ') }}
+
+{% endif %}
+
+{% if params %}
+## 推荐生成参数
+
+| 参数 | 值 |
+|------|-----|
+{% for key, value in params.items() %}
+| {{ key }} | {{ value }} |
+{% endfor %}
+
+{% endif %}
+
+{% if files %}
+## 文件信息
+
+| 文件名 | 大小 |
+|--------|------|
+{% for file in files %}
+| {{ file.name }} | {{ file.size_display or '-' }} |
+{% endfor %}
+
+{% endif %}
+
+{% if description %}
+## 模型描述
+
+{{ description }}
+{% endif %}
