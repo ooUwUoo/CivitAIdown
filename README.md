@@ -2,6 +2,8 @@
 
 面向 ComfyUI / Stable Diffusion 用户的 Windows 桌面下载工具，用于从 CivitAI 获取模型信息并下载模型，支持断点续传、暂停 / 继续、本地模型库浏览与资料导出。
 
+![主界面](docs/screenshot-main.png)
+
 ## 功能概览
 
 - **模型信息获取**：粘贴 CivitAI URL，自动拉取模型详情、版本、文件列表、示例图片
