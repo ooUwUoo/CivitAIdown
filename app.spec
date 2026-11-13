@@ -30,6 +30,7 @@ except NameError:
 
 RESOURCES_DIR = ROOT / "src" / "resources"
 MIGRATIONS_DIR = ROOT / "migrations"
+LICENSE_PATH = ROOT / "LICENSE"
 ENTRY_POINT = str(ROOT / "main.py")
 OUTPUT_DIR = str(ROOT / "dist" / "CivitAIManager")
 APP_NAME = "CivitAIManager"
@@ -50,6 +51,10 @@ DATA_FILES = [
     (
         str(MIGRATIONS_DIR),
         "resources/migrations"
+    ),
+    (
+        str(LICENSE_PATH),
+        "."
     ),
 ]
 
