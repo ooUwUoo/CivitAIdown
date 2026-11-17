@@ -979,7 +979,13 @@ class ModelRepository:
             )
             if hit:
                 return hit
-            # 备用：通过 files 表关联查找
+            # 备用：通过 files 表关联查找。
+            # 必须附加 lm.file_name = f.name 的文件级约束：
+            # 同一版本下常有多个量化文件（bf16 / fp8 / nvfp4 等），
+            # 仅按 version_id 关联会把"同版本其他量化文件已下载"误判成
+            # 目标文件已下载（典型现象：先下 BF16 后下 FP8 提示已存在）。
+            # 新命名（xxx_fp8.safetensors）与 files.name（xxx_<id>.safetensors）
+            # 不同，由 file_name 规则兜底；历史旧命名的记录仍能在此命中。
             conn = self._connect()
             try:
                 row = conn.execute(
@@ -987,6 +993,7 @@ class ModelRepository:
                     SELECT lm.* FROM local_models lm
                     JOIN files f ON lm.version_id = f.version_id
                     WHERE f.civitai_file_id = ?
+                      AND lm.file_name = f.name
                     LIMIT 1
                     """,
                     (civitai_file_id,),

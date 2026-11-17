@@ -531,3 +531,42 @@ class DownloadTaskRepository:
             return row["name"] if row else None
         finally:
             conn.close()
+
+    def resolve_file_ids(self, file_id: int) -> tuple[int | None, int | None]:
+        """把任务里的文件 ID 解析为 (files 表主键, CivitAI 文件 ID)。
+
+        任务对象的 file_id 在两种场景下语义不同：
+        - 新建任务：UI 传入的是 CivitAI 文件 ID；
+        - 从数据库恢复任务：download_tasks.file_id 存的是 files 表主键。
+        去重必须使用真正的 CivitAI 文件 ID，否则会漏判或误判。
+
+        解析顺序与 create_task 保持一致：先按 CivitAI 文件 ID 匹配，
+        未命中再按 files 表主键匹配。
+
+        Args:
+            file_id: 可能是 CivitAI 文件 ID，也可能是 files 表主键
+
+        Returns:
+            (db_file_id, civitai_file_id)，均可能为 None
+        """
+        if not file_id or file_id <= 0:
+            return None, None
+
+        conn = self._connect()
+        try:
+            row = conn.execute(
+                "SELECT id, civitai_file_id FROM files WHERE civitai_file_id = ?",
+                (file_id,),
+            ).fetchone()
+            if row is None:
+                row = conn.execute(
+                    "SELECT id, civitai_file_id FROM files WHERE id = ?",
+                    (file_id,),
+                ).fetchone()
+            if row is None:
+                return None, None
+            civitai_id = row["civitai_file_id"]
+            return row["id"], int(civitai_id) if civitai_id else None
+        finally:
+            conn.close()
+

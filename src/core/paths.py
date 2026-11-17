@@ -7,8 +7,8 @@
   - 用户数据：EXE 同级目录下的 data/、logs/、downloads/
 
 绿色版目录结构：
-    CivitAIManager/
-      ├─ CivitAIManager.exe
+    CivitAIdown/
+      ├─ CivitAIdown.exe
       ├─ _internal/        # PyInstaller 内部文件（--onefile 模式）
       ├─ resources/        # 静态资源（templates、i18n、style.qss）
       ├─ data/             # 用户数据
@@ -44,6 +44,11 @@ __all__ = [
     "DEFAULT_MODEL_TYPE_SUBDIR",
     "get_comfyui_subdir_for_model_type",
 ]
+
+# 应用目录名（开发模式数据目录，%APPDATA% 下）
+_APP_DIR_NAME = "CivitAIdown"
+# 旧版应用目录名（仅用于兼容既有数据）
+_LEGACY_APP_DIR_NAME = "CivitAIManager"
 
 
 def is_frozen() -> bool:
@@ -85,7 +90,9 @@ def get_resource_dir() -> Path:
 def get_app_data_dir() -> Path:
     """获取应用数据目录（绿色版模式下为 EXE 同级目录）。
 
-    dev 模式：%APPDATA%/CivitAIManager
+    dev 模式：%APPDATA%/CivitAIdown
+             （若新目录不存在而旧目录 %APPDATA%/CivitAIManager 存在，
+              继续使用旧目录，避免已有数据丢失）
     frozen 模式（绿色版）：EXE 同级目录/data/
 
     绿色版设计理念：
@@ -97,8 +104,14 @@ def get_app_data_dir() -> Path:
         return get_app_root() / "data"
     appdata = os.environ.get("APPDATA")
     if appdata:
-        return Path(appdata) / "CivitAIManager"
-    return Path.home() / ".civitai_manager"
+        new_dir = Path(appdata) / _APP_DIR_NAME
+        if new_dir.exists():
+            return new_dir
+        legacy_dir = Path(appdata) / _LEGACY_APP_DIR_NAME
+        if legacy_dir.exists():
+            return legacy_dir
+        return new_dir
+    return Path.home() / _APP_DIR_NAME.lower()
 
 
 def get_user_data_dir() -> Path:

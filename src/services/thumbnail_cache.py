@@ -337,7 +337,7 @@ class ThumbnailCache:
         if self._client is None:
             self._client = httpx.Client(
                 follow_redirects=True,
-                headers={"User-Agent": "CivitAIManager/1.0"},
+                headers={"User-Agent": "CivitAIdown/1.0"},
             )
         return self._client
 

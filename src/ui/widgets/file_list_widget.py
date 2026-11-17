@@ -1,9 +1,9 @@
 """版本文件清单组件 - 显示版本中的文件列表。
 
 功能：
-- 显示文件名、文件大小、类型、量化标签
+- 显示文件名、文件大小、类型、量化标签、本地下载状态
 - 提供下载选择框
-- 点击行内任意位置（文件名 / 大小 / 类型 / 量化）即可切换选中状态
+- 点击行内任意位置（文件名 / 大小 / 类型 / 量化 / 状态）即可切换选中状态
 - 返回选中的文件列表
 
 信号：
@@ -12,9 +12,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtCore import QEvent, QObject, Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
@@ -66,6 +67,8 @@ class FileListWidget(QWidget):
         self._files: list[FileInfo] = []
         self._checkboxes: dict[int, QCheckBox] = {}
         self._row_widgets: dict[int, QWidget] = {}
+        self._status_labels: dict[int, QLabel] = {}
+        self._downloaded_checker: Callable[[FileInfo], bool] | None = None
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -79,6 +82,7 @@ class FileListWidget(QWidget):
         header_layout.addWidget(QLabel(self.tr("大小")), 1)
         header_layout.addWidget(QLabel(self.tr("类型")), 1)
         header_layout.addWidget(QLabel(self.tr("量化")), 1)
+        header_layout.addWidget(QLabel(self.tr("状态")), 1)
         layout.addLayout(header_layout)
 
         scroll_area = QScrollArea()
@@ -112,9 +116,21 @@ class FileListWidget(QWidget):
         selected = self.get_selected_files()
         self.selection_changed.emit(selected)
 
-    def set_version(self, version: VersionInfo) -> None:
-        """设置版本，显示文件列表。"""
+    def set_version(
+        self,
+        version: VersionInfo,
+        downloaded_checker: Callable[[FileInfo], bool] | None = None,
+    ) -> None:
+        """设置版本，显示文件列表。
+
+        Args:
+            version: 版本信息
+            downloaded_checker: 可选的本地已下载判定回调。
+                必须基于文件级去重（同一版本内不同量化文件要能区分）。
+                返回 True 标注"已下载"，False 标注"未下载"。
+        """
         self._files = version.files.copy()
+        self._downloaded_checker = downloaded_checker
         self._clear_files()
 
         if not self._files:
@@ -128,6 +144,39 @@ class FileListWidget(QWidget):
 
         self._select_all_checkbox.setChecked(False)
 
+    def refresh_download_status(self) -> None:
+        """重新计算并刷新每个文件的本地下载状态标注。"""
+        for file_info in self._files:
+            label = self._status_labels.get(file_info.id)
+            if label is not None:
+                self._render_status(label, self._check_downloaded(file_info))
+
+    def _check_downloaded(self, file_info: FileInfo) -> bool | None:
+        """调用外部判定回调，异常或未提供时返回 None（显示 "-"）。"""
+        if self._downloaded_checker is None:
+            return None
+        try:
+            return bool(self._downloaded_checker(file_info))
+        except Exception:
+            _logger.exception("判读本地下载状态失败: %s", file_info.name)
+            return None
+
+    @staticmethod
+    def _render_status(label: QLabel, is_downloaded: bool | None) -> None:
+        """按下载状态设置状态列文本与颜色。"""
+        if is_downloaded is None:
+            label.setText("-")
+            label.setStyleSheet("QLabel { color: #8b949e; }")
+            label.setToolTip("")
+        elif is_downloaded:
+            label.setText(QObject.tr("已下载"))
+            label.setStyleSheet("QLabel { color: #3fb950; font-weight: bold; }")
+            label.setToolTip(QObject.tr("该文件已存在于本地下载目录"))
+        else:
+            label.setText(QObject.tr("未下载"))
+            label.setStyleSheet("QLabel { color: #8b949e; }")
+            label.setToolTip("")
+
     def _clear_files(self) -> None:
         """清空文件列表。"""
         while self._content_layout.count():
@@ -136,6 +185,7 @@ class FileListWidget(QWidget):
                 item.widget().deleteLater()
         self._checkboxes.clear()
         self._row_widgets.clear()
+        self._status_labels.clear()
 
     def eventFilter(self, obj, event) -> bool:
         """捕获行内命中控件上的鼠标释放事件，切换选中状态。
@@ -187,6 +237,13 @@ class FileListWidget(QWidget):
         quant_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._make_row_cell_clickable(quant_label, file_info.id)
         row_layout.addWidget(quant_label, 1)
+
+        status_label = QLabel()
+        status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._render_status(status_label, self._check_downloaded(file_info))
+        self._make_row_cell_clickable(status_label, file_info.id)
+        self._status_labels[file_info.id] = status_label
+        row_layout.addWidget(status_label, 1)
 
         row_widget = _ClickableRow()
         row_widget.setObjectName("FileListRow")

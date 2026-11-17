@@ -2,7 +2,7 @@
 
 设计要点：
 - API Key 不直接存配置文件，只存 keyring 引用 ID（`api_key_ref`），实际密钥由 keyring 管理
-- 配置文件路径：%APPDATA%/CivitAIManager/config.json
+- 配置文件路径：%APPDATA%/CivitAIdown/config.json（开发模式）或 EXE 同级 data/config.json（绿色版）
 - 通过 ConfigManager 负责读写，Settings 本身仅作为数据模型
 """
 

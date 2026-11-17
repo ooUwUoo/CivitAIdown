@@ -84,7 +84,7 @@ class TestCreateApp:
 
     def test_app_metadata_name(self, qapp, isolated_env):
         app, _ = create_app(argv=["test"])
-        assert app.applicationName() == "CivitAIManager"
+        assert app.applicationName() == "CivitAIdown"
 
     def test_app_metadata_version(self, qapp, isolated_env):
         app, _ = create_app(argv=["test"])
@@ -162,7 +162,7 @@ class TestMainWindow:
     def test_window_title_is_chinese(self, qtbot):
         window = MainWindow()
         qtbot.addWidget(window)
-        assert window.windowTitle() == "CivitAI 模型管理工具"
+        assert window.windowTitle() == "CivitAI 模型下载工具"
 
     def test_window_default_size(self, qtbot):
         window = MainWindow()
@@ -232,4 +232,4 @@ class TestAppIntegration:
         app, _ = create_app(argv=["test"])
         window = MainWindow()
         qtbot.addWidget(window)
-        assert window.windowTitle() == "CivitAI 模型管理工具"
+        assert window.windowTitle() == "CivitAI 模型下载工具"

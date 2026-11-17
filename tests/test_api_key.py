@@ -52,18 +52,18 @@ class TestSetApiKey:
 
     def test_set_stores_key(self, mgr: ConfigManager, mock_keyring):
         mgr.set_api_key("test-key-123")
-        assert mock_keyring._store[("CivitAIManager", "civitai_api_key")] == "test-key-123"
+        assert mock_keyring._store[("CivitAIdown", "civitai_api_key")] == "test-key-123"
 
     def test_set_overwrites_existing_key(self, mgr: ConfigManager, mock_keyring):
         mgr.set_api_key("old-key")
         mgr.set_api_key("new-key")
-        assert mock_keyring._store[("CivitAIManager", "civitai_api_key")] == "new-key"
+        assert mock_keyring._store[("CivitAIdown", "civitai_api_key")] == "new-key"
         assert len(mock_keyring._store) == 1
 
-    def test_service_name_is_civitaimanager(self, mgr: ConfigManager, mock_keyring):
+    def test_service_name_is_civitaidown(self, mgr: ConfigManager, mock_keyring):
         mgr.set_api_key("abc")
         (service, _user), _value = list(mock_keyring._store.items())[0]
-        assert service == "CivitAIManager"
+        assert service == "CivitAIdown"
 
 
 class TestGetApiKey:
@@ -77,6 +77,17 @@ class TestGetApiKey:
     def test_get_returns_none_when_not_set(self, mgr: ConfigManager, mock_keyring):
         result = mgr.get_api_key()
         assert result is None
+
+    def test_get_falls_back_to_legacy_service(self, mgr: ConfigManager, mock_keyring):
+        """新服务名没有时，回退读取旧服务名 CivitAIManager 的 Key。"""
+        mock_keyring.set_password("CivitAIManager", "civitai_api_key", "legacy-key")
+        assert mgr.get_api_key() == "legacy-key"
+
+    def test_get_prefers_new_service_over_legacy(self, mgr: ConfigManager, mock_keyring):
+        """新旧服务名都有 Key 时，优先返回新服务名的值。"""
+        mock_keyring.set_password("CivitAIManager", "civitai_api_key", "legacy-key")
+        mock_keyring.set_password("CivitAIdown", "civitai_api_key", "new-key")
+        assert mgr.get_api_key() == "new-key"
 
     def test_get_returns_none_on_error(self, mgr: ConfigManager):
         bad_kr = _make_mock_keyring()
@@ -99,7 +110,14 @@ class TestClearApiKey:
         assert mgr.get_api_key() == "secret"
         mgr.clear_api_key()
         assert mgr.get_api_key() is None
+        assert ("CivitAIdown", "civitai_api_key") not in mock_keyring._store
+
+    def test_clear_removes_legacy_key(self, mgr: ConfigManager, mock_keyring):
+        """清除时同时移除旧服务名下的 Key。"""
+        mock_keyring.set_password("CivitAIManager", "civitai_api_key", "legacy-key")
+        mgr.clear_api_key()
         assert ("CivitAIManager", "civitai_api_key") not in mock_keyring._store
+        assert mgr.get_api_key() is None
 
     def test_clear_noop_when_key_not_found(self, mgr: ConfigManager, mock_keyring):
         mgr.clear_api_key()  # 不抛异常
@@ -156,4 +174,4 @@ class TestKeyringServiceConstant:
     """验证常量定义正确。"""
 
     def test_keyring_service_name(self):
-        assert _KEYRING_SERVICE == "CivitAIManager"
+        assert _KEYRING_SERVICE == "CivitAIdown"

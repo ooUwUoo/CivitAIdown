@@ -326,6 +326,8 @@ class ModelInfoPanel(QWidget):
         self._download_direct_button.clicked.connect(self._on_download_direct)
         self._browse_dir_btn.clicked.connect(self._on_browse_dir)
         self._use_default_dir_check.toggled.connect(self._on_use_default_dir_toggled)
+        # 保存目录变化后，本地已下载标注需要按新目录重新计算
+        self._download_dir_edit.textChanged.connect(self._on_download_dir_changed)
 
     def _on_version_changed(self, index: int) -> None:
         """版本选择变化。
@@ -339,7 +341,9 @@ class ModelInfoPanel(QWidget):
             return
 
         self._selected_version = self._model_info.versions[index]
-        self._file_list.set_version(self._selected_version)
+        self._file_list.set_version(
+            self._selected_version, self._is_file_downloaded
+        )
         self._auto_select_files()
         self._update_trigger_words()
         self._update_version_description()
@@ -409,6 +413,7 @@ class ModelInfoPanel(QWidget):
             self._download_dir_edit.setText(default_dir)
             # 用户显式切回默认目录，记忆该选择（保留上次自定义目录值）
             self._persist_last_dir(use_custom=False)
+        self.refresh_download_status()
 
     def _apply_remembered_dir(self) -> None:
         """初始化时带入上次下载使用的保存目录。
@@ -616,6 +621,80 @@ class ModelInfoPanel(QWidget):
 
         return pending, skipped
 
+    # ------------------------------------------------------------
+    # 本地已下载标注（文件级）
+    # ------------------------------------------------------------
+
+    def _current_base_dir(self) -> Path | None:
+        """当前界面选择的下载根目录（只计算，不创建目录、不写配置）。"""
+        if self._config_manager is None:
+            return None
+        if not self._use_default_dir_check.isChecked():
+            custom_dir = self._download_dir_edit.text().strip()
+            if custom_dir:
+                return Path(custom_dir)
+        return Path(self._config_manager.load().downloads_dir)
+
+    def _candidate_dirs(self) -> list[Path]:
+        """文件可能的保存位置：模型资料包目录与下载根目录。"""
+        if self._model_info is None or self._selected_version is None:
+            return []
+        base_dir = self._current_base_dir()
+        if base_dir is None:
+            return []
+        model_dir = get_model_package_dir(
+            model_name=self._model_info.name,
+            version_name=self._selected_version.name,
+            base_dir=base_dir,
+        )
+        return list(dict.fromkeys([model_dir, base_dir]))
+
+    def _is_file_downloaded(self, file_info: FileInfo) -> bool:
+        """判断单个文件是否已下载到本地。
+
+        复用 DownloadManager.check_duplicate 的文件级去重：目标文件名包含
+        量化标签，因此同一版本下 BF16 已下载不会把 FP8 误标为已下载。
+        """
+        if (
+            self._download_manager is None
+            or self._model_info is None
+            or self._selected_version is None
+        ):
+            return False
+
+        file_name = build_model_file_name(
+            file_info.name,
+            file_id=file_info.id,
+            metadata=file_info.file_metadata,
+        )
+        total_bytes = int(file_info.size_kb * 1024) if file_info.size_kb else 0
+
+        for model_dir in self._candidate_dirs():
+            probe = DownloadTaskInfo(
+                task_id=0,
+                file_id=file_info.id,
+                version_id=self._selected_version.id,
+                model_id=self._model_info.id,
+                save_path=str(model_dir / file_name),
+                total_bytes=total_bytes,
+                file_name=file_name,
+            )
+            try:
+                dup = self._download_manager.check_duplicate(probe)
+            except Exception:
+                _logger.exception("查询本地下载状态失败: %s", file_name)
+                continue
+            if dup.is_duplicate and dup.existing_path:
+                return True
+        return False
+
+    def refresh_download_status(self) -> None:
+        """刷新文件列表的本地已下载标注。"""
+        self._file_list.refresh_download_status()
+
+    def _on_download_dir_changed(self, _text: str) -> None:
+        self.refresh_download_status()
+
     def _show_already_exists(self, file_names: list[str]) -> None:
         """提示用户文件已存在、已跳过下载。"""
         from PySide6.QtWidgets import QMessageBox
@@ -672,7 +751,9 @@ class ModelInfoPanel(QWidget):
                 self._version_combo.addItem(version.name)
             # 单版本模型自动选中第一个版本；多版本模型默认也选中第一个版本
             self._selected_version = model_info.versions[0]
-            self._file_list.set_version(self._selected_version)
+            self._file_list.set_version(
+                self._selected_version, self._is_file_downloaded
+            )
             self._auto_select_files()
             self._update_trigger_words()
             self._update_version_description()

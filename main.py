@@ -1,4 +1,4 @@
-"""CivitAI 模型管理工具 - 程序入口。
+"""CivitAI 模型下载工具（CivitAIdown） - 程序入口。
 
 启动流程：
 1. 调用 src.app.run_app()

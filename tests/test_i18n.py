@@ -142,7 +142,7 @@ class TestTranslationFiles:
         content = ts_path.read_text(encoding="utf-8")
 
         assert "<name>MainWindow</name>" in content
-        assert "<source>CivitAI 模型管理工具</source>" in content
+        assert "<source>CivitAI 模型下载工具</source>" in content
         assert "<source>就绪</source>" in content
 
     def test_english_ts_contains_translation(self):
@@ -151,7 +151,7 @@ class TestTranslationFiles:
         content = ts_path.read_text(encoding="utf-8")
 
         assert "<name>MainWindow</name>" in content
-        assert "<translation>CivitAI Model Manager</translation>" in content
+        assert "<translation>CivitAI Model Downloader</translation>" in content
         assert "<translation>Ready</translation>" in content
 
 
@@ -171,7 +171,7 @@ class TestAppTranslation:
         content = main_window_path.read_text(encoding="utf-8")
 
         assert "self.tr(" in content
-        assert 'self.tr("CivitAI 模型管理工具")' in content
+        assert 'self.tr("CivitAI 模型下载工具")' in content
         assert 'self.tr("就绪")' in content
 
 

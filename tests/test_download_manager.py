@@ -574,17 +574,25 @@ class TestPauseResume:
         self, qtbot, manager, repo, seed_file_data, tmp_path
     ):
         """恢复后数据库状态为 downloading，任务最终完成。"""
-        content = b"I" * 2048
+        # 慢速流式响应：固定大小的响应会瞬时下完，pause 会落在下载完成之后，
+        # 测试随即超时（与业务逻辑无关的时序竞争）。
+        content = b"I" * (20 * 1024)
         url = "https://test.example.com/resume.safetensors"
 
         with respx.mock(base_url="https://test.example.com") as mock:
-            _mock_route(mock, "/resume.safetensors", content)
+            mock.get("/resume.safetensors").mock(
+                side_effect=lambda req: httpx.Response(
+                    200,
+                    content=_slow_streaming_response(content, chunk_size=1024, delay=0.05),
+                    headers={"Content-Length": str(len(content))},
+                )
+            )
 
             task_id = create_db_task(repo, seed_file_data, tmp_path, total_bytes=len(content))
             manager.submit(make_task_info(task_id, total_bytes=len(content), save_dir=tmp_path, url=url))
 
             qtbot.waitUntil(lambda: manager.get_active_count() == 1, timeout=2000)
-            qtbot.wait(20)
+            qtbot.wait(50)
 
             manager.pause(task_id)
             qtbot.waitUntil(
@@ -978,6 +986,82 @@ class TestDuplicateCheck:
 
         # 残留记录应被自动清理
         assert model_repo.get_local_model_by_path(stale_path) is None
+
+    def test_same_version_different_quantization_not_duplicate(
+        self, qtbot, store, repo, seed_file_data, tmp_path
+    ):
+        """同版本不同量化文件：BF16 已下载不应把 FP8 误判为已下载。
+
+        回归用例：files 表同版本存在多个文件，local_models 已有 BF16 记录。
+        旧逻辑的备用 JOIN 只按 version_id 关联，请求 FP8 时会命中 BF16 记录；
+        修复后必须同时满足文件级条件（lm.file_name = f.name）。
+        """
+        from src.services.metadata_repository import ModelRepository
+
+        model_repo = ModelRepository(store)
+        model_dir = tmp_path / "TestModel_v1"
+        model_dir.mkdir(parents=True, exist_ok=True)
+        bf16_path = model_dir / "TestModel_bf16.safetensors"
+        bf16_path.write_bytes(b"bf16 data")
+        model_repo.save_local_model(
+            file_path=str(bf16_path),
+            file_name=bf16_path.name,
+            file_size_bytes=len(b"bf16 data"),
+            civitai_model_id=100,
+            version_id=200,
+            civitai_file_id=300,
+        )
+
+        manager = DownloadManager(repo, model_repo=model_repo)
+
+        # 请求同版本下的另一个文件（FP8），保存路径与 BF16 不同
+        task = DownloadTaskInfo(
+            task_id=1,
+            file_id=301,
+            model_id=100,
+            version_id=200,
+            save_path=str(model_dir / "TestModel_fp8.safetensors"),
+            total_bytes=1024,
+            file_name="TestModel_fp8.safetensors",
+        )
+
+        result = manager.check_duplicate(task)
+        assert result.is_duplicate is False
+
+    def test_legacy_original_name_still_detected(
+        self, qtbot, store, repo, seed_file_data, tmp_path
+    ):
+        """历史旧命名（与 CivitAI 原始文件名一致）仍能被去重命中。"""
+        from src.services.metadata_repository import ModelRepository
+
+        model_repo = ModelRepository(store)
+        model_dir = tmp_path / "TestModel_v1"
+        model_dir.mkdir(parents=True, exist_ok=True)
+        legacy_path = model_dir / "file_300.safetensors"
+        legacy_path.write_bytes(b"legacy data")
+        # 历史记录未写入 civitai_file_id，只能通过 files.name 关联命中
+        model_repo.save_local_model(
+            file_path=str(legacy_path),
+            file_name=legacy_path.name,
+            file_size_bytes=len(b"legacy data"),
+            civitai_model_id=100,
+            version_id=200,
+        )
+
+        manager = DownloadManager(repo, model_repo=model_repo)
+
+        task = DownloadTaskInfo(
+            task_id=1,
+            file_id=300,
+            model_id=100,
+            version_id=200,
+            save_path=str(model_dir / "TestModel_fp8.safetensors"),
+            total_bytes=1024,
+            file_name="TestModel_fp8.safetensors",
+        )
+
+        result = manager.check_duplicate(task)
+        assert result.is_duplicate is True
 
 
 class TestSkipAndSupplement:

@@ -1,4 +1,4 @@
-"""主窗口 - CivitAI 模型管理工具主界面。
+"""主窗口 - CivitAI 模型下载工具主界面。
 
 功能：
 - 中央区域：多标签页视图（模型库 / 下载列表 / 设置）
@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
 
     def _setup_window(self) -> None:
         """设置窗口基础属性。"""
-        self.setWindowTitle(self.tr("CivitAI 模型管理工具"))
+        self.setWindowTitle(self.tr("CivitAI 模型下载工具"))
         self.resize(_DEFAULT_WIDTH, _DEFAULT_HEIGHT)
         self.setMinimumSize(_MIN_WIDTH, _MIN_HEIGHT)
 
@@ -379,6 +379,12 @@ class MainWindow(QMainWindow):
             self._download_list.start_polling()
         else:
             self._download_list.stop_polling()
+        if index == 0:
+            # 回到模型库时刷新"已下载"标注，避免下载完成后标注仍是旧状态
+            panel = self._model_tab_widget.currentWidget()
+            refresher = getattr(panel, "refresh_download_status", None)
+            if callable(refresher):
+                refresher()
 
     def _on_model_fetched(self, model_info: ModelInfo, source_url: str = "") -> None:
         """模型信息获取成功处理 - 创建新的模型标签页。"""

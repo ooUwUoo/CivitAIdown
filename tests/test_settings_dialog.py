@@ -127,7 +127,7 @@ class TestSettingsDialogSave:
         monkeypatch.setattr(dialog, "accept", lambda: None)
         dialog._on_save()
 
-        assert saved_keys.get(("CivitAIManager", "civitai_api_key")) == "test-api-key-123"
+        assert saved_keys.get(("CivitAIdown", "civitai_api_key")) == "test-api-key-123"
 
     def test_empty_downloads_dir_not_saved(self, qt_app, config_manager, monkeypatch):
         """下载目录为空时不覆盖已有值。"""

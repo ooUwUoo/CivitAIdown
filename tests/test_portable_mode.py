@@ -34,7 +34,7 @@ class TestPortableModeOnedir:
 
     def test_app_root_resolves_to_exe_dir(self, monkeypatch, tmp_path):
         """验证 app_root 指向 EXE 所在目录。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -48,7 +48,7 @@ class TestPortableModeOnedir:
 
     def test_resource_dir_in_exe_sibling(self, monkeypatch, tmp_path):
         """验证资源目录在 EXE 同级目录。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -63,7 +63,7 @@ class TestPortableModeOnedir:
 
     def test_app_data_dir_is_exe_sibling_data(self, monkeypatch, tmp_path):
         """验证数据目录为 EXE 同级/data/。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -79,7 +79,7 @@ class TestPortableModeOnedir:
 
     def test_db_path_in_data_dir(self, monkeypatch, tmp_path):
         """验证数据库路径为 data/app.db。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -94,7 +94,7 @@ class TestPortableModeOnedir:
 
     def test_log_dir_is_exe_sibling_logs(self, monkeypatch, tmp_path):
         """验证日志目录为 EXE 同级/logs/。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -109,7 +109,7 @@ class TestPortableModeOnedir:
 
     def test_download_dir_is_exe_sibling_downloads(self, monkeypatch, tmp_path):
         """验证下载目录为 EXE 同级/downloads/。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -124,7 +124,7 @@ class TestPortableModeOnedir:
 
     def test_thumbnail_cache_in_data_dir(self, monkeypatch, tmp_path):
         """验证缩略图缓存目录为 data/thumbnails/。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -139,7 +139,7 @@ class TestPortableModeOnedir:
 
     def test_config_path_in_data_dir(self, monkeypatch, tmp_path):
         """验证配置文件路径为 data/config.json。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -158,7 +158,7 @@ class TestPortableModeOnefile:
 
     def test_resource_dir_uses_meipass(self, monkeypatch, tmp_path):
         """验证资源目录使用 sys._MEIPASS/resources。"""
-        exe_path = tmp_path / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown.exe"
         exe_path.touch()
 
         meipass = tmp_path / "_internal"
@@ -175,7 +175,7 @@ class TestPortableModeOnefile:
 
     def test_app_data_dir_not_in_meipass(self, monkeypatch, tmp_path):
         """验证数据目录不在 _MEIPASS 临时目录内。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -195,7 +195,7 @@ class TestPortableModeOnefile:
 
     def test_log_dir_not_in_meipass(self, monkeypatch, tmp_path):
         """验证日志目录不在 _MEIPASS 临时目录内。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -217,7 +217,7 @@ class TestPortableModeDirCreation:
 
     def test_ensure_app_dirs_creates_all(self, monkeypatch, tmp_path):
         """验证 EnsureAppDirs.all() 创建所有目录。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -236,7 +236,7 @@ class TestPortableModeDirCreation:
 
     def test_ensure_user_dirs_backwards_compatible(self, monkeypatch, tmp_path):
         """验证 ensure_user_dirs() 向后兼容。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -258,7 +258,7 @@ class TestPortableModeDatabase:
 
     def test_database_initializes_in_data_dir(self, monkeypatch, tmp_path):
         """验证数据库在 data/app.db 初始化。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -276,7 +276,7 @@ class TestPortableModeDatabase:
 
     def test_database_not_in_meipass(self, monkeypatch, tmp_path):
         """验证数据库不在 _MEIPASS 临时目录。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -302,7 +302,7 @@ class TestPortableModeResources:
 
     def test_resource_dir_contains_required_files(self, monkeypatch, tmp_path):
         """验证资源目录包含必需文件。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 
@@ -328,7 +328,7 @@ class TestPortableModeResources:
 
     def test_qss_loads_from_resource_dir(self, monkeypatch, tmp_path):
         """验证 QSS 样式表能从资源目录加载。"""
-        exe_path = tmp_path / "CivitAIManager" / "CivitAIManager.exe"
+        exe_path = tmp_path / "CivitAIdown" / "CivitAIdown.exe"
         exe_path.parent.mkdir(parents=True, exist_ok=True)
         exe_path.touch()
 

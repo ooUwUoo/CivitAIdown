@@ -23,9 +23,9 @@ __all__ = ["create_app", "run_app"]
 _logger = get_logger(__name__)
 
 # 应用全局配置
-_APP_NAME = "CivitAIManager"
+_APP_NAME = "CivitAIdown"
 _APP_VERSION = "1.0.0"
-_ORG_NAME = "CivitAIManager"
+_ORG_NAME = "CivitAIdown"
 
 # 中文字体回退链（Windows 优先 Microsoft YaHei UI）
 _FONT_FAMILY = "Microsoft YaHei UI"

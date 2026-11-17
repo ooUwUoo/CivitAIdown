@@ -4,8 +4,8 @@
     <context>
         <name>MainWindow</name>
         <message>
-            <source>CivitAI 模型管理工具</source>
-            <translation>CivitAI 模型管理工具</translation>
+            <source>CivitAI 模型下载工具</source>
+            <translation>CivitAI 模型下载工具</translation>
         </message>
         <message>
             <source>主工具栏</source>
@@ -186,8 +186,8 @@
     <context>
         <name>Application</name>
         <message>
-            <source>CivitAI 模型管理工具</source>
-            <translation>CivitAI 模型管理工具</translation>
+            <source>CivitAI 模型下载工具</source>
+            <translation>CivitAI 模型下载工具</translation>
         </message>
         <message>
             <source>就绪</source>

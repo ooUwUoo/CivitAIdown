@@ -62,7 +62,7 @@ class FirstRunWizard(QWidget):
         self._downloads_dir: str = ""
         self._completed: bool = False
 
-        self.setWindowTitle("CivitAI 模型管理工具 - 首次配置")
+        self.setWindowTitle("CivitAI 模型下载工具 - 首次配置")
         self.setMinimumSize(520, 360)
         self.setWindowFlags(
             Qt.WindowType.Dialog | Qt.WindowType.WindowTitleHint
@@ -125,7 +125,7 @@ class FirstRunWizard(QWidget):
         layout = QVBoxLayout(page)
         layout.setSpacing(12)
 
-        title = QLabel("<h1>欢迎使用 CivitAI 模型管理工具</h1>")
+        title = QLabel("<h1>欢迎使用 CivitAI 模型下载工具</h1>")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 

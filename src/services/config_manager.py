@@ -23,7 +23,9 @@ __all__ = ["ConfigManager"]
 _logger = logging.getLogger(__name__)
 
 # keyring 服务名（用于 Windows Credential Manager）
-_KEYRING_SERVICE = "CivitAIManager"
+_KEYRING_SERVICE = "CivitAIdown"
+# 旧版 keyring 服务名：读取失败时回退，保证更名前保存的 API Key 仍可用
+_LEGACY_KEYRING_SERVICE = "CivitAIManager"
 
 
 class ConfigManager:
@@ -93,11 +95,21 @@ class ConfigManager:
     # ---- API Key 管理（通过 keyring）----
 
     def get_api_key(self) -> str | None:
-        """从 keyring 读取 API Key。"""
+        """从 keyring 读取 API Key。
+
+        优先读取新服务名；读不到时回退旧服务名（兼容改名前的数据）。
+        """
         try:
             import keyring
 
-            return keyring.get_password(_KEYRING_SERVICE, DEFAULT_SETTINGS.api_key_ref)
+            ref = DEFAULT_SETTINGS.api_key_ref
+            key = keyring.get_password(_KEYRING_SERVICE, ref)
+            if key:
+                return key
+            key = keyring.get_password(_LEGACY_KEYRING_SERVICE, ref)
+            if key:
+                _logger.info("从旧 keyring 服务名读取到 API Key（兼容模式）")
+            return key
         except Exception as e:
             _logger.warning("读取 API Key 失败: %s", e)
             return None
@@ -110,12 +122,17 @@ class ConfigManager:
         _logger.info("API Key 已保存到 keyring")
 
     def clear_api_key(self) -> None:
-        """清除 API Key。"""
+        """清除 API Key（新旧服务名一并清除）。"""
         try:
             import keyring
 
-            keyring.delete_password(_KEYRING_SERVICE, DEFAULT_SETTINGS.api_key_ref)
+            ref = DEFAULT_SETTINGS.api_key_ref
+            for service in (_KEYRING_SERVICE, _LEGACY_KEYRING_SERVICE):
+                try:
+                    keyring.delete_password(service, ref)
+                except Exception:
+                    # keyring 未找到对应项时也会抛异常，忽略
+                    pass
             _logger.info("API Key 已清除")
         except Exception:
-            # keyring 未找到对应项时也会抛异常，忽略
             pass

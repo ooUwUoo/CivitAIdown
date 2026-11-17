@@ -184,9 +184,14 @@ class DownloadManager(QObject):
             return DuplicateCheckResult(False)
 
         try:
+            # task.file_id 在"新建任务"时是 CivitAI 文件 ID，
+            # 在"数据库恢复任务"时是 files 表主键，必须先解析再用，
+            # 否则同版本不同量化文件会被误判为同一份已下载。
+            db_file_id, civitai_file_id = self._resolve_task_file_ids(task)
+
             result = self._model_repo.find_existing_model(
                 sha256=task.sha256 or None,
-                civitai_file_id=task.file_id if task.file_id > 0 else None,
+                civitai_file_id=civitai_file_id,
                 file_path=task.save_path,
                 model_id=task.model_id if task.model_id > 0 else None,
                 version_id=task.version_id if task.version_id > 0 else None,
@@ -196,12 +201,12 @@ class DownloadManager(QObject):
             # 旧命名兼容：历史下载的文件按 CivitAI 原始名保存
             # （如 xxx_3033528.safetensors），新命名（xxx_int8.safetensors）
             # 无法通过文件名或路径命中，需用原始名再查一次，避免重复下载。
-            if not result and task.file_id > 0 and task.file_name:
-                legacy_name = self._repo.get_file_original_name(task.file_id)
+            if not result and db_file_id and task.file_name:
+                legacy_name = self._repo.get_file_original_name(db_file_id)
                 if isinstance(legacy_name, str) and legacy_name and legacy_name != task.file_name:
                     legacy_path = str(Path(task.save_path).parent / legacy_name)
                     result = self._model_repo.find_existing_model(
-                        civitai_file_id=task.file_id if task.file_id > 0 else None,
+                        civitai_file_id=civitai_file_id,
                         file_path=legacy_path,
                         model_id=task.model_id if task.model_id > 0 else None,
                         version_id=task.version_id if task.version_id > 0 else None,
@@ -212,7 +217,7 @@ class DownloadManager(QObject):
                 match_type = "path"
                 if task.sha256 and result.get("sha256") == task.sha256:
                     match_type = "sha256"
-                elif task.file_id and result.get("civitai_file_id") == task.file_id:
+                elif civitai_file_id and result.get("civitai_file_id") == civitai_file_id:
                     match_type = "civitai_file_id"
                 elif task.model_id and task.version_id and task.file_name \
                         and result.get("civitai_model_id") == task.model_id \
@@ -235,6 +240,34 @@ class DownloadManager(QObject):
             _logger.exception("去重检查失败 task_id=%d", task.task_id)
 
         return DuplicateCheckResult(False)
+
+    def _resolve_task_file_ids(
+        self, task: DownloadTaskInfo
+    ) -> tuple[int | None, int | None]:
+        """解析任务的 (files 表主键, CivitAI 文件 ID)。
+
+        任务对象的 file_id 语义不统一：新建任务时是 CivitAI 文件 ID，
+        从数据库恢复时是 files 表主键。统一交给仓储层反查，
+        反查失败时保守地按 CivitAI 文件 ID 处理（与旧行为一致）。
+        """
+        if self._repo is None or task.file_id <= 0:
+            return None, None
+
+        resolver = getattr(self._repo, "resolve_file_ids", None)
+        if resolver is None:
+            return None, task.file_id
+
+        try:
+            db_file_id, civitai_file_id = resolver(task.file_id)
+        except Exception:
+            _logger.exception(
+                "解析任务文件 ID 失败 task_id=%d file_id=%d",
+                task.task_id,
+                task.file_id,
+            )
+            return None, task.file_id
+
+        return db_file_id, civitai_file_id
 
     # ============================================================
     # 任务提交
@@ -662,6 +695,11 @@ class DownloadManager(QObject):
         if save_path.exists():
             file_size = save_path.stat().st_size
 
+        # 必须写入真实的 civitai_file_id：去重第一级查询依赖该字段，
+        # 缺省为 NULL 时会退化到按版本关联的兜底查询，导致同版本
+        # 不同量化文件被误判为已下载。
+        _, civitai_file_id = self._resolve_task_file_ids(task)
+
         self._model_repo.save_local_model(
             file_path=task.save_path,
             file_name=task.file_name or save_path.name,
@@ -669,6 +707,7 @@ class DownloadManager(QObject):
             sha256=task.sha256 or None,
             civitai_model_id=task.model_id if task.model_id > 0 else None,
             version_id=task.version_id if task.version_id > 0 else None,
+            civitai_file_id=civitai_file_id,
         )
         _logger.debug(
             "已保存到 local_models task_id=%d path=%s",

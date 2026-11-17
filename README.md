@@ -17,9 +17,9 @@
 
 ## 快速开始
 
-1. 前往 [Releases](https://github.com/ooUwUoo/CivitAIdown/releases) 下载最新的 `CivitAIManager_Portable.zip`
+1. 前往 [Releases](https://github.com/ooUwUoo/CivitAIdown/releases) 下载最新的 `CivitAIdown_Portable.zip`
 2. 解压到任意目录（路径无需含中文以外的特殊字符）
-3. 运行解压目录中的 `CivitAIManager.exe`
+3. 运行解压目录中的 `CivitAIdown.exe`
 4. 首次使用时在向导或设置中填写你的 CivitAI API Key
 
 ## 使用说明

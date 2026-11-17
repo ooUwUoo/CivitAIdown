@@ -37,7 +37,7 @@ class TestSpecFile:
         assert "Analysis(" in content
         assert "EXE(" in content
         assert "COLLECT(" in content
-        assert "CivitAIManager" in content
+        assert "CivitAIdown" in content
 
     def test_entry_point_exists(self):
         """入口文件 main.py 存在。"""
@@ -48,7 +48,7 @@ class TestSpecFile:
         """输出目录配置正确。"""
         spec_path = ROOT / "app.spec"
         content = spec_path.read_text(encoding="utf-8")
-        assert 'dist/CivitAIManager' in content or 'dist\\\\CivitAIManager' in content
+        assert 'dist/CivitAIdown' in content or 'dist\\\\CivitAIdown' in content
 
 
 class TestResources:
@@ -176,7 +176,7 @@ class TestPathsFrozenSupport:
 
         try:
             sys.frozen = True
-            sys._MEIPASS = str(ROOT / "dist" / "CivitAIManager")
+            sys._MEIPASS = str(ROOT / "dist" / "CivitAIdown")
 
             # 重新导入以测试 frozen 模式
             import importlib

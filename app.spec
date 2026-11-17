@@ -1,4 +1,4 @@
-"""PyInstaller 打包配置 - CivitAI 模型管理工具（绿色版）。
+"""PyInstaller 打包配置 - CivitAI 模型下载工具（CivitAIdown，绿色版）。
 
 绿色版设计理念：
 - 免安装：无需安装程序，直接运行 EXE
@@ -7,8 +7,8 @@
 - 完整卸载：删除整个文件夹即可
 
 输出目录结构（--onedir 模式）：
-    dist/CivitAIManager/
-      ├─ CivitAIManager.exe    # 主程序
+    dist/CivitAIdown/
+      ├─ CivitAIdown.exe      # 主程序
       ├─ resources/            # 静态资源（templates、i18n、style.qss）
       ├─ PySide6/              # Qt 插件
       ├─ data/                 # 用户数据（自动创建）
@@ -32,8 +32,8 @@ RESOURCES_DIR = ROOT / "src" / "resources"
 MIGRATIONS_DIR = ROOT / "migrations"
 LICENSE_PATH = ROOT / "LICENSE"
 ENTRY_POINT = str(ROOT / "main.py")
-OUTPUT_DIR = str(ROOT / "dist" / "CivitAIManager")
-APP_NAME = "CivitAIManager"
+OUTPUT_DIR = str(ROOT / "dist" / "CivitAIdown")
+APP_NAME = "CivitAIdown"
 ICON_PATH = str(RESOURCES_DIR / "icons" / "app.ico")
 
 IS_WINDOWS = sys.platform == "win32"
@@ -235,7 +235,7 @@ exe = EXE(
     icon=ICON_PATH if os.path.exists(ICON_PATH) else None,
 )
 
-# COLLECT 将所有文件输出到 dist/CivitAIManager/ 目录
+# COLLECT 将所有文件输出到 dist/CivitAIdown/ 目录
 coll = COLLECT(
     exe,
     a.binaries,
