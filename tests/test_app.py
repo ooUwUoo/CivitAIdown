@@ -88,7 +88,7 @@ class TestCreateApp:
 
     def test_app_metadata_version(self, qapp, isolated_env):
         app, _ = create_app(argv=["test"])
-        assert app.applicationVersion() == "1.0.0"
+        assert app.applicationVersion() == "1.1.0"
 
     def test_app_font_set(self, qapp, isolated_env):
         """验证中文字体已设置。"""

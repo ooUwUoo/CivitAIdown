@@ -24,7 +24,7 @@ _logger = get_logger(__name__)
 
 # 应用全局配置
 _APP_NAME = "CivitAIdown"
-_APP_VERSION = "1.0.0"
+_APP_VERSION = "1.1.0"
 _ORG_NAME = "CivitAIdown"
 
 # 中文字体回退链（Windows 优先 Microsoft YaHei UI）
